@@ -1,0 +1,45 @@
+name: Sync Main to Other Branches
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Git Config
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Fetch and List Remote Branches
+        id: list_branches
+        run: |
+          # Fetch all remote branches
+          git fetch --all
+          # List all remote branches except main (assuming remote is named "origin")
+          branches=$(git branch -r | grep -v 'origin/main' | sed 's/origin\///')
+          echo "Found branches: $branches"
+          # Export the list to be used in later steps
+          echo "branches=$branches" >> $GITHUB_OUTPUT
+
+      - name: Merge Main into Other Branches
+        run: |
+          for branch in $(echo "${{ steps.list_branches.outputs.branches }}"); do
+            echo "Merging main into $branch"
+            # Check out the branch locally
+            git checkout $branch
+            # Merge main into the branch without prompting for a commit message; conflicts will be flagged
+            git merge main --no-edit || echo "Merge conflict in branch $branch. Manual resolution required."
+            # Push the updated branch to the remote repository
+            git push origin $branch
+          done
