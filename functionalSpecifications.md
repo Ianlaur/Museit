@@ -265,4 +265,4 @@ This specification outlines a robust platform for collaborative music production
 
 ## License
 <a id="license"></a>
-[GNU Affero General Public License v3.0](./LICENSE.md).
+[GNU Affero General Public License v3.0](./LICENSE).
